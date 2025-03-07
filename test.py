@@ -2,6 +2,7 @@ import time
 import os
 import subprocess
 import argparse
+import re
 
 def execute_traceroute(destination):
     """
@@ -68,14 +69,28 @@ def parse_traceroute(traceroute_output):
     # Handle timeouts (asterisks) appropriately
     # Remove this line once you implement the function,
     # and don't forget to *return* the output
+    
+    # hops = []
+    # lines = traceroute_output.splitlines()
+    # hop_regex = re.compile(r'^\s*(\d+)\s+(\S+)\s+\((\S+)\)\s+([\d.]+)\s+ms\s+([\d.]+)\s+ms\s+([\d.]+)\s+ms')
+    # timeout_regex = re.compile(r'^\s*(\d+)\s+\*')
 
+    # for line in lines:
+    #     hop_match = hop_regex.match(line)
+    #     timeout_match = timeout_regex.match(line)
+    #     if hop_match:
+    #         hop = int(hop_match.group(1))
+    #         hostname = hop_match.group(2)
+    #         ip = hop_match.group(3)
+    #         rtt = [float(hop_match.group(4)), float(hop_match.group(5)), float(hop_match.group(6))]
+    #         hops.append({'hop': hop, 'ip': ip, 'hostname': hostname, 'rtt': rtt})
+    #     elif timeout_match:
+    #         hop = int(timeout_match.group(1))
+    #         hops.append({'hop': hop, 'ip': None, 'hostname': None, 'rtt': [None, None, None]})
 
-
-
-
-
-
+    # return hops
     pass
 
 addresses = execute_traceroute("google.com")
-print(addresses)
+parsed_addresses = parse_traceroute(addresses)
+print(parsed_addresses)
