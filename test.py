@@ -1,30 +1,12 @@
-import time
-import os
 import subprocess
-import argparse
-import re
 
 def execute_traceroute(destination):
-    """
-    Executes a traceroute to the specified destination and returns the output.
-    Args:
-        destination (str): The hostname or IP address to trace
-    Returns:
-        str: The raw output from the traceroute command
-    """
-    # Your code here
-    # Hint: Use the subprocess module to run the traceroute command
-    # Make sure to handle potential errors
-    # Remove this line once you implement the function,
-    # and don't forget to *return* the output
-
-    # trace = subprocess.run(["traceroute", "-I", destination], stdout=subprocess.PIPE)
-    # return trace.stdout.decode("utf-8")
     try:
-        print("Running traceroute...")
-        result = subprocess.run(["traceroute", "-I", destination], check=True, text=True)
+        print("Running traceroute...") 
         # Run the traceroute command and capture the output
-        return str(result.stdout)
+        trace = subprocess.run(["traceroute", "-I", destination], stdout=subprocess.PIPE)
+        
+        return parse_traceroute(str(trace.stdout.decode("utf-8")))
     except Exception as e:
         print("error {}".format(e))
         return str(e)
@@ -69,28 +51,43 @@ def parse_traceroute(traceroute_output):
     # Handle timeouts (asterisks) appropriately
     # Remove this line once you implement the function,
     # and don't forget to *return* the output
-    
-    # hops = []
-    # lines = traceroute_output.splitlines()
-    # hop_regex = re.compile(r'^\s*(\d+)\s+(\S+)\s+\((\S+)\)\s+([\d.]+)\s+ms\s+([\d.]+)\s+ms\s+([\d.]+)\s+ms')
-    # timeout_regex = re.compile(r'^\s*(\d+)\s+\*')
+    hops = []
+    lines = traceroute_output.split("\n")
 
-    # for line in lines:
-    #     hop_match = hop_regex.match(line)
-    #     timeout_match = timeout_regex.match(line)
-    #     if hop_match:
-    #         hop = int(hop_match.group(1))
-    #         hostname = hop_match.group(2)
-    #         ip = hop_match.group(3)
-    #         rtt = [float(hop_match.group(4)), float(hop_match.group(5)), float(hop_match.group(6))]
-    #         hops.append({'hop': hop, 'ip': ip, 'hostname': hostname, 'rtt': rtt})
-    #     elif timeout_match:
-    #         hop = int(timeout_match.group(1))
-    #         hops.append({'hop': hop, 'ip': None, 'hostname': None, 'rtt': [None, None, None]})
-
-    # return hops
-    pass
-
-addresses = execute_traceroute("google.com")
-parsed_addresses = parse_traceroute(addresses)
-print(parsed_addresses)
+    for line in lines[1:]:  # Skip the first line
+        if line.strip() == "":
+            continue
+        parts = line.split()
+        if len(parts) < 8:
+            # Handle lines with missing information (e.g., timeouts)
+            hop = int(parts[0])
+            ip = parts[1] if len(parts) > 1 else None
+            hostname = parts[2] if len(parts) > 2 else None
+            rtt = [None, None, None]
+            for i, part in enumerate(parts[3:]):
+                if part.endswith("ms"):
+                    rtt[i] = part.replace("ms", "")
+                else:
+                    rtt[i] = None
+        else:
+            hop = int(parts[0])
+            ip = parts[1]
+            hostname = parts[2]
+            rtt = [parts[3].replace("ms", ""), parts[5].replace("ms", ""), parts[7].replace("ms", "")]
+        hops.append({
+            'hop': hop,
+            'ip': ip,
+            'hostname': hostname,
+            'rtt': rtt
+        })
+        # Format the output with newlines using f-strings
+        formatted_output = "\n".join(
+            [f"""
+            hop: {hop['hop']}
+            ip: {hop['ip']}
+            hostname: {hop['hostname']}
+            rtt: {hop['rtt']}
+            """ for hop in hops]
+                )
+    return formatted_output
+print(execute_traceroute("google.com"))
