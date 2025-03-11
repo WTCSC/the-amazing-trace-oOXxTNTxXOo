@@ -55,4 +55,14 @@ def parse_traceroute(traceroute_output):
 }}""" for hop in hops]
                 )
     return formatted_output
+print('google.com')
 print(execute_traceroute("google.com"))
+
+print('github.com')
+print(execute_traceroute("github.com"))
+
+print('mixed-hostnames.example.com')
+print(execute_traceroute("mixed-hostnames.example.com"))
+
+print('example.com')
+print(execute_traceroute("example.com"))
